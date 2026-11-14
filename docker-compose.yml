@@ -1,0 +1,16 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-CU16-ubuntu-22.04   # pin a CU tag, never :latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}   # from .env, which is gitignored
+      MSSQL_PID: Developer
+    ports: ["1433:1433"]
+    volumes:
+      - mssql_data:/var/opt/mssql
+      - ./Synthea_Healthcare_Dataset:/data:ro    # BULK INSERT reads from /data/*.csv
+    deploy:
+      resources:
+        limits: { cpus: "4", memory: 6g }       # fixed limits so timings are comparable
+volumes:
+  mssql_data:

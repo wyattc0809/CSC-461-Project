@@ -1,0 +1,60 @@
+/* =============================================================================
+   01_staging_and_load.sql
+   Raw landing tables that mirror the Synthea CSV headers 1:1, then BULK INSERT.
+   /data is the dataset folder mounted read-only by docker-compose.yml.
+
+   Only the five tables the admissions model needs are loaded here; the other
+   Synthea CSVs follow the exact same pattern.
+   ========================================================================== */
+USE SyntheaHealth;
+GO
+
+DROP TABLE IF EXISTS stg.patients, stg.encounters, stg.conditions,
+                     stg.medications, stg.observations;
+GO
+
+CREATE TABLE stg.patients (
+    Id VARCHAR(36), BIRTHDATE VARCHAR(10), DEATHDATE VARCHAR(10), SSN VARCHAR(11),
+    DRIVERS VARCHAR(20), PASSPORT VARCHAR(20), PREFIX VARCHAR(10), FIRST VARCHAR(50),
+    MIDDLE VARCHAR(50), LAST VARCHAR(50), SUFFIX VARCHAR(10), MAIDEN VARCHAR(50),
+    MARITAL VARCHAR(5), RACE VARCHAR(20), ETHNICITY VARCHAR(20), GENDER VARCHAR(1),
+    BIRTHPLACE VARCHAR(100), ADDRESS VARCHAR(100), CITY VARCHAR(50), STATE VARCHAR(50),
+    COUNTY VARCHAR(50), FIPS VARCHAR(10), ZIP VARCHAR(10), LAT VARCHAR(30), LON VARCHAR(30),
+    HEALTHCARE_EXPENSES VARCHAR(20), HEALTHCARE_COVERAGE VARCHAR(20), INCOME VARCHAR(20)
+);
+
+CREATE TABLE stg.encounters (
+    Id VARCHAR(36), START VARCHAR(20), STOP VARCHAR(20), PATIENT VARCHAR(36),
+    ORGANIZATION VARCHAR(36), PROVIDER VARCHAR(36), PAYER VARCHAR(36),
+    ENCOUNTERCLASS VARCHAR(20), CODE VARCHAR(20), DESCRIPTION VARCHAR(255),
+    BASE_ENCOUNTER_COST VARCHAR(20), TOTAL_CLAIM_COST VARCHAR(20), PAYER_COVERAGE VARCHAR(20),
+    REASONCODE VARCHAR(20), REASONDESCRIPTION VARCHAR(255)
+);
+
+CREATE TABLE stg.conditions (
+    START VARCHAR(10), STOP VARCHAR(10), PATIENT VARCHAR(36), ENCOUNTER VARCHAR(36),
+    SYSTEM VARCHAR(50), CODE VARCHAR(20), DESCRIPTION VARCHAR(255)
+);
+
+CREATE TABLE stg.medications (
+    START VARCHAR(20), STOP VARCHAR(20), PATIENT VARCHAR(36), PAYER VARCHAR(36),
+    ENCOUNTER VARCHAR(36), CODE VARCHAR(20), DESCRIPTION VARCHAR(255),
+    BASE_COST VARCHAR(20), PAYER_COVERAGE VARCHAR(20), DISPENSES VARCHAR(10),
+    TOTALCOST VARCHAR(20), REASONCODE VARCHAR(20), REASONDESCRIPTION VARCHAR(255)
+);
+
+CREATE TABLE stg.observations (
+    DATE VARCHAR(20), PATIENT VARCHAR(36), ENCOUNTER VARCHAR(36), CATEGORY VARCHAR(30),
+    CODE VARCHAR(20), DESCRIPTION VARCHAR(255), VALUE VARCHAR(255), UNITS VARCHAR(30),
+    TYPE VARCHAR(20)
+);
+GO
+
+-- Some files end lines with CRLF, some with LF. Split on LF and strip the stray
+-- CR from the last column during the typed load (02_clin_tables.sql).
+BULK INSERT stg.patients     FROM '/data/patients.csv'     WITH (FORMAT = 'CSV', FIRSTROW = 2, FIELDQUOTE = '"', ROWTERMINATOR = '0x0a', CODEPAGE = '65001', TABLOCK);
+BULK INSERT stg.encounters   FROM '/data/encounters.csv'   WITH (FORMAT = 'CSV', FIRSTROW = 2, FIELDQUOTE = '"', ROWTERMINATOR = '0x0a', CODEPAGE = '65001', TABLOCK);
+BULK INSERT stg.conditions   FROM '/data/conditions.csv'   WITH (FORMAT = 'CSV', FIRSTROW = 2, FIELDQUOTE = '"', ROWTERMINATOR = '0x0a', CODEPAGE = '65001', TABLOCK);
+BULK INSERT stg.medications  FROM '/data/medications.csv'  WITH (FORMAT = 'CSV', FIRSTROW = 2, FIELDQUOTE = '"', ROWTERMINATOR = '0x0a', CODEPAGE = '65001', TABLOCK);
+BULK INSERT stg.observations FROM '/data/observations.csv' WITH (FORMAT = 'CSV', FIRSTROW = 2, FIELDQUOTE = '"', ROWTERMINATOR = '0x0a', CODEPAGE = '65001', TABLOCK);
+GO

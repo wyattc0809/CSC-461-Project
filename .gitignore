@@ -1,0 +1,9 @@
+.env
+results/
+__pycache__/
+*.pyc
+.venv/
+
+# Dataset CSVs are too large for GitHub (100 MB file limit); share them outside git.
+Synthea_Healthcare_Dataset/*
+!Synthea_Healthcare_Dataset/README.md
