@@ -22,10 +22,14 @@ from .sql_runner import SqlRunner, load_sql_files
 def setup_database() -> None:
     print("Setting up database ...")
     runner = SqlRunner(config.connection_string(database="master"))
+    data_dir = config.DATA_DIR.rstrip("/\\")
+    sep = "\\" if "\\" in data_dir or ":" in data_dir else "/"
+    replacements = {"'/data/": f"'{data_dir}{sep}"}
+    print(f"  CSV folder (as seen by SQL Server): {data_dir}")
     try:
         for f in load_sql_files(config.SCHEMA_DIR):
             print(f"  running {f.name}")
-            runner.run_script(f)
+            runner.run_script(f, replacements)
     finally:
         runner.close()
 

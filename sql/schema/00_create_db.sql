@@ -4,8 +4,10 @@
 
      stg   raw CSV landing tables (everything VARCHAR, no keys)
      clin  typed, keyed, indexed clinical tables (what the queries read)
-     slow  output tables written by sql/queries/inefficient/*
-     fast  output tables written by sql/queries/efficient/*
+     slow  output tables written by the files in sql/queries/inefficient
+     fast  output tables written by the files in sql/queries/efficient
+   (Don't write a path ending in slash-star in a block comment: T-SQL nests
+   block comments, so it opens a second comment that never closes.)
    ========================================================================== */
 IF DB_ID('SyntheaHealth') IS NULL
     CREATE DATABASE SyntheaHealth;

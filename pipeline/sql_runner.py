@@ -93,10 +93,15 @@ class SqlRunner:
         """Cold-cache run: empty the buffer pool and plan cache. Dev container only!"""
         self.conn.cursor().execute("CHECKPOINT; DBCC DROPCLEANBUFFERS; DBCC FREEPROCCACHE;")
 
-    def run_script(self, f: SqlFile) -> None:
-        """Run a file without measuring it (schema setup)."""
+    def run_script(self, f: SqlFile, replacements: dict[str, str] | None = None) -> None:
+        """Run a file without measuring it (schema setup).
+
+        `replacements` rewrites literal text first, e.g. the '/data/' CSV folder.
+        """
         cur = self.conn.cursor()
         for batch in f.batches:
+            for old, new in (replacements or {}).items():
+                batch = batch.replace(old, new)
             cur.execute(batch)
             while cur.nextset():
                 pass

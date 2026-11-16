@@ -54,7 +54,7 @@ CREATE TABLE clin.medications (
     PATIENT     UNIQUEIDENTIFIER NOT NULL REFERENCES clin.patients (Id),
     ENCOUNTER   UNIQUEIDENTIFIER NULL,
     CODE        VARCHAR(20)      NOT NULL,
-    DESCRIPTION VARCHAR(255)     NULL
+    DESCRIPTION VARCHAR(500)     NULL           -- longest medication name is 288 bytes
 );
 
 CREATE TABLE clin.observations (

@@ -35,11 +35,9 @@ TARGET = "label"
 
 
 def time_split(df: pd.DataFrame, train_end: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Split by snapshot date, never at random, so the model never sees the future."""
     cutoff = pd.Timestamp(train_end)
     dates = pd.to_datetime(df["snapshot_date"])
     return df[dates < cutoff], df[dates >= cutoff]
-
 
 class AdmissionRateModel:
     def __init__(self, seed: int):
@@ -93,3 +91,6 @@ class AdmissionRateModel:
                 (rates["predicted_per_1000"] - rates["actual_per_1000"]).abs().mean()
             ),
         }
+
+
+    """Split by snapshot date, never at random, so the model never sees the future."""
